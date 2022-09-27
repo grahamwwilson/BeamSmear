@@ -19,7 +19,9 @@
 //
 // So far the assumption in the files in common use seems to be that there are 
 // no correlations amongst the variables. This assumption should be 
-// double-checked.
+// double-checked as older studies indicated that there should at least be 
+// some E-z correlations, and this is a parameter that can change the 
+// center-of-mass energy spread.
 //
 // This implementation is not time-critical. The relatively slower Ranlux 
 // random number generator is used.
@@ -44,6 +46,8 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
    TRandom *r4 = new TRandom1(seed+3);
    TRandom *r5 = new TRandom1(seed+4);
    TRandom *r6 = new TRandom1(seed+5);
+   
+   bool update=true;
    
    double x1,x2,x3,x4,x5,x6;
    const double m=0.5109989461e-3;
@@ -81,7 +85,8 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
    cout << "sigmaZ  (um) = " << sigmaZ << endl;
    cout << "sigmaXP (um) = " << sigmaXP << endl;
    cout << "sigmaYP (um) = " << sigmaYP << endl;
-   cout << "truncate at +- " << truncate << " sigma" << endl; 
+   cout << "truncate at +- " << truncate << " sigma" << endl;
+   cout << "update flag    " << update << endl; 
    
 // Simulate N particles for this beam   
    for (int i=0;i<N;i++){
@@ -93,9 +98,17 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
        while (inrange < 6){
           inrange = 0;
           x1 = r1->Gaus(Emean,sigmaE);
+// recalculate beam-size and divergence for single particle using actual gamma
+          if(update){
+              gamma = x1/m;
+              sigmaX  = CONV*sqrt(eX*bX/gamma);
+              sigmaY  = CONV*sqrt(eY*bY/gamma);
+              sigmaXP = CONV*sqrt(eX/(gamma*bX));
+              sigmaYP = CONV*sqrt(eY/(gamma*bY));
+          }          
           x2 = r2->Gaus(0.0,sigmaX);
           x3 = r3->Gaus(0.0,sigmaY);
-          x4 = r4->Gaus(0.0,sigmaZ);
+          x4 = r4->Gaus(0.0,sigmaZ);     // This should also be a function of the relative deviation from nominal?
           x5 = r5->Gaus(0.0,sigmaXP);
           x6 = r6->Gaus(0.0,sigmaYP);
 // Check that all 6 variables are within the specified tolerance 
