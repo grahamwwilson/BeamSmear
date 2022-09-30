@@ -18,8 +18,8 @@
 // 6. y' (micro-radians)
 //
 // So far the assumption in the files in common use seems to be that there are 
-// no correlations amongst the variables. This assumption should be 
-// double-checked as older studies indicated that there should at least be 
+// no correlations amongst the variables. This assumption is likely wrong 
+// as older studies indicated that there should at least be 
 // some E-z correlations, and this is a parameter that can change the 
 // center-of-mass energy spread.
 //
@@ -30,7 +30,7 @@
 //
 
 void beamsmearZ(string bfile="electronZ.ini",unsigned int seed=13,
-               double Espread=0.00300, int N=80000, double Emean=45.6, 
+               double Espread=0.00300, int N=500000, double Emean=45.6, 
                double truncate=4.0,
                double sigmaZ=410.0, double betaX=18.0, 
                double betaY=0.39, double emittX=6.2, double emittY=0.0485){
