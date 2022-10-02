@@ -30,10 +30,10 @@
 //
 
 void beamsmear(string bfile="electron.ini",unsigned int seed=1,
-               double Espread=0.00190, int N=500000, double Emean=125.0, 
+               double Espread=0.00190, int N=160000, double Emean=125.0, 
                double truncate=4.0,
                double sigmaZ=300.0, double betaX=13.0, 
-               double betaY=0.41, double emittX=5.0, double emittY=0.035){
+               double betaY=0.41, double emittX=5.0, double emittY=0.035, double rhoEz=0.30){
 
 // Open output file
    ofstream beamfile;
@@ -50,6 +50,7 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
    bool update=true;
    
    double x1,x2,x3,x4,x5,x6;
+   double z1,z4;
    const double m=0.5109989461e-3;
    double gamma = Emean/m; // Question - should this be calculated per beam 
                            // (as done here) or per particle after smearing?
@@ -85,6 +86,7 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
    cout << "sigmaZ  (um) = " << sigmaZ << endl;
    cout << "sigmaXP (um) = " << sigmaXP << endl;
    cout << "sigmaYP (um) = " << sigmaYP << endl;
+   cout << "rhoEz        = " << rhoEz << endl;
    cout << "truncate at +- " << truncate << " sigma" << endl;
    cout << "update flag    " << update << endl; 
    
@@ -97,7 +99,8 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
        int inrange=0;
        while (inrange < 6){
           inrange = 0;
-          x1 = r1->Gaus(Emean,sigmaE);
+          z1 = r1->Gaus(0.0,1.0);
+          x1 = Emean + z1*sigmaE;
 // recalculate beam-size and divergence for single particle using actual gamma
           if(update){
               gamma = x1/m;
@@ -108,7 +111,9 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
           }          
           x2 = r2->Gaus(0.0,sigmaX);
           x3 = r3->Gaus(0.0,sigmaY);
-          x4 = r4->Gaus(0.0,sigmaZ);     // This should also be a function of the relative deviation from nominal?
+          z4 = r4->Gaus(0.0,1.0);
+          x4 = sigmaZ*(rhoEz*z1 + sqrt(1.0-rhoEz*rhoEz)*z4);   // Energy-z correlation
+// sigmaZ should also be a function of the relative deviation from nominal?
           x5 = r5->Gaus(0.0,sigmaXP);
           x6 = r6->Gaus(0.0,sigmaYP);
 // Check that all 6 variables are within the specified tolerance 
