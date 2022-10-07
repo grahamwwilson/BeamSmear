@@ -30,14 +30,16 @@
 //
 
 void beamsmear(string bfile="electron.ini",unsigned int seed=1,
-               double Espread=0.00190, int N=160000, double Emean=125.0, 
-               double truncate=4.0,
+               double Espread=0.00190, int N=320000, double Emean=125.0, 
+               double truncate=20.0,
                double sigmaZ=300.0, double betaX=13.0, 
-               double betaY=0.41, double emittX=5.0, double emittY=0.035, double rhoEz=0.30){
+               double betaY=0.41, double emittX=5.0, double emittY=0.035, double rhoEz=0.0){
 
 // Open output file
    ofstream beamfile;
    beamfile.open(bfile);
+   
+   seed+=2000;
    
 // Initialize 6 independent random number generators for each variable
    TRandom *r1 = new TRandom1(seed);
@@ -47,9 +49,17 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
    TRandom *r5 = new TRandom1(seed+4);
    TRandom *r6 = new TRandom1(seed+5);
    
+   TH2D *h1 = new TH2D("h1","E- vs comoving z; z [microns]; E- [GeV]", 200, -1000.0, 1000.0, 200, 123.8, 126.2);
+   TFile *f = new TFile("Plots.root","recreate");
+   
    bool update=true;
    
-   double x1,x2,x3,x4,x5,x6;
+   double x1=0.0;
+   double x2=0.0;
+   double x3=0.0;
+   double x4=0.0;
+   double x5=0.0;
+   double x6=0.0;
    double z1,z4;
    const double m=0.5109989461e-3;
    double gamma = Emean/m; // Question - should this be calculated per beam 
@@ -128,6 +138,8 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
 //                              << inrange << endl;                          
        }
        
+       h1->Fill(x4, x1);
+       
 // Choose same formatting as files used by ILD       
        beamfile << setprecision(7) << std::scientific
                 << setw(16) << x1
@@ -139,5 +151,8 @@ void beamsmear(string bfile="electron.ini",unsigned int seed=1,
    }
    
    beamfile.close();
+   h1->Draw("hist");
+   h1->Write();
+   f->Write();
 
 }
